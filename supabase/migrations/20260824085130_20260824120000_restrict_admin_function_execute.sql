@@ -1,0 +1,13 @@
+REVOKE EXECUTE ON FUNCTION public.admin_ban_user(uuid, text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_get_analytics(integer) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_get_media() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_get_reports() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_get_stats() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_get_subscriptions() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_get_users() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_hide_profile(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_resolve_report(uuid, text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_unban_user(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_update_ticket_status(uuid, text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.is_user_banned(uuid) FROM anon;
