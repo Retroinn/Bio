@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /forgot-password
+
+Sitemap: https://b-io.xyz/sitemap.xml

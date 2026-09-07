@@ -114,14 +114,16 @@ export function resolveBackground(profile: Profile): BackgroundStyle {
   }
 
   if (type === 'video' && typeof cfg.url === 'string' && isSafeUrl(cfg.url)) {
+    const videoSound = (cfg.video_sound as boolean) ?? false;
     return {
       containerStyle: {},
       videoEl: (
         <video
+          id="bg-video"
           autoPlay
-          muted
           loop
           playsInline
+          muted={!videoSound}
           className="absolute inset-0 h-full w-full object-cover"
           style={{ opacity: (cfg.opacity as number) ?? 1 }}
         >

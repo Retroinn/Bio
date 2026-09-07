@@ -55,21 +55,39 @@ export function PublicProfilePage({ username }: { username: string }) {
     if (profile && theme !== null) {
       const resolved = resolveTheme(profile, theme);
       applyThemeCSS(resolved);
+      const canonicalUrl = `https://b-io.xyz/${profile.username}`;
       document.title = profile.seo_title || `${profile.display_name || profile.username} — B.io`;
       const meta = document.querySelector('meta[name="description"]');
       if (meta) meta.setAttribute('content', profile.seo_description || profile.bio || `b.io/${profile.username}`);
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) { canonical = document.createElement('link'); canonical.setAttribute('rel', 'canonical'); document.head.appendChild(canonical); }
+      canonical.setAttribute('href', canonicalUrl);
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) { ogTitle = document.createElement('meta'); ogTitle.setAttribute('property', 'og:title'); document.head.appendChild(ogTitle); }
+      ogTitle.setAttribute('content', profile.seo_title || `${profile.display_name || profile.username} — B.io`);
+      let ogDesc = document.querySelector('meta[property="og:description"]');
+      if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property', 'og:description'); document.head.appendChild(ogDesc); }
+      ogDesc.setAttribute('content', profile.seo_description || profile.bio || `b.io/${profile.username}`);
+      let ogUrl = document.querySelector('meta[property="og:url"]');
+      if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
+      ogUrl.setAttribute('content', canonicalUrl);
       if (profile.seo_image) {
         let ogImg = document.querySelector('meta[property="og:image"]');
         if (!ogImg) { ogImg = document.createElement('meta'); ogImg.setAttribute('property', 'og:image'); document.head.appendChild(ogImg); }
         ogImg.setAttribute('content', profile.seo_image);
       }
-      if (!profile.seo_indexable) {
+      if (profile.seo_indexable) {
+        document.querySelector('meta[name="robots"]')?.setAttribute('content', 'index, follow');
+      } else {
         let noindex = document.querySelector('meta[name="robots"]');
         if (!noindex) { noindex = document.createElement('meta'); noindex.setAttribute('name', 'robots'); document.head.appendChild(noindex); }
         noindex.setAttribute('content', 'noindex, nofollow');
       }
     }
-    return () => { document.title = 'B.io — Your identity. One link.'; };
+    return () => {
+      document.title = 'B.io — Kimliğin, tek bağlantıda.';
+      document.querySelector('link[rel="canonical"]')?.remove();
+    };
   }, [profile, theme]);
 
   if (profile === undefined) return <ProfileSkeleton />;
@@ -91,6 +109,8 @@ export function PublicProfilePage({ username }: { username: string }) {
 
   const resolvedTheme = resolveTheme(profile, theme);
   const bg = resolveBackground(profile);
+  const bgVideoSound = (profile.background_config?.video_sound as boolean) ?? false;
+  if (typeof window !== 'undefined') (window as unknown as { __bgVideoSound?: boolean }).__bgVideoSound = bgVideoSound;
   const visibleSocials = profile.show_socials ? content?.socials.filter((s) => s.is_active) ?? [] : [];
   const visibleLinks = content?.links.filter((l) => l.is_active) ?? [];
   const visibleProjects = profile.show_projects ? content?.projects.filter((p) => p.is_visible) ?? [] : [];
@@ -100,7 +120,7 @@ export function PublicProfilePage({ username }: { username: string }) {
 
   return (
     <div
-      className="relative min-h-screen pb-12"
+      className="relative min-h-screen overflow-x-hidden pb-12"
       style={{
         backgroundColor: resolvedTheme.background,
         ...bg.containerStyle,
@@ -777,10 +797,24 @@ function MusicPlayer({ track, theme }: { track: MusicTrack; theme: ResolvedTheme
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track.audio_url]);
 
+  const muteBgVideo = () => {
+    const v = document.getElementById('bg-video') as HTMLVideoElement | null;
+    if (v) v.muted = true;
+  };
+  const restoreBgVideo = () => {
+    const v = document.getElementById('bg-video') as HTMLVideoElement | null;
+    if (!v) return;
+    const cfg = (window as unknown as { __bgVideoSound?: boolean }).__bgVideoSound;
+    if (cfg) v.muted = false;
+  };
+
   const toggle = () => {
     if (!audio) return;
-    if (playing) { audio.pause(); setPlaying(false); }
-    else { audio.play().then(() => setPlaying(true)).catch(() => {}); }
+    if (playing) { audio.pause(); setPlaying(false); restoreBgVideo(); }
+    else {
+      document.querySelectorAll('audio').forEach((a) => { if (a !== audio) { a.pause(); } });
+      audio.play().then(() => { setPlaying(true); muteBgVideo(); }).catch(() => {});
+    }
   };
 
   const setVol = (v: number) => { setVolume(v); if (audio) audio.volume = v; };

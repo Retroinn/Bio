@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   BarChart3, CreditCard, Disc3, Globe, Image as ImageIcon, Layout, Link2, LogOut, Menu, Music,
   Palette, Settings as SettingsIcon, Sparkles, User, Wrench, X, LifeBuoy,
@@ -32,6 +32,13 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth();
   const { isPro } = useEntitlements();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="robots"]');
+    if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'robots'); document.head.appendChild(meta); }
+    meta.setAttribute('content', 'noindex, nofollow');
+    return () => { meta?.setAttribute('content', 'index, follow'); };
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();

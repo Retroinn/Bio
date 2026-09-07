@@ -55,6 +55,7 @@ export function AppearancePage() {
   const [bgGradient, setBgGradient] = useState('');
   const [bgImageUrl, setBgImageUrl] = useState('');
   const [bgVideoUrl, setBgVideoUrl] = useState('');
+  const [bgVideoSound, setBgVideoSound] = useState(false);
   const [bgOpacity, setBgOpacity] = useState(1);
   const [bgBlur, setBgBlur] = useState(0);
   const [showCssEditor, setShowCssEditor] = useState(false);
@@ -82,6 +83,7 @@ export function AppearancePage() {
       setBgGradient((cfg.gradient as string) ?? '');
       setBgImageUrl((cfg.url as string) ?? '');
       setBgVideoUrl((cfg.url as string) ?? '');
+      setBgVideoSound((cfg.video_sound as boolean) ?? false);
       setBgOpacity((cfg.opacity as number) ?? 1);
       setBgBlur((cfg.blur as number) ?? 0);
     }
@@ -93,7 +95,7 @@ export function AppearancePage() {
     if (bgType === 'color') return { color: bgColor };
     if (bgType === 'gradient') return { gradient: bgGradient };
     if (bgType === 'image') return { url: bgImageUrl, opacity: bgOpacity, blur: bgBlur };
-    if (bgType === 'video') return { url: bgVideoUrl, opacity: bgOpacity };
+    if (bgType === 'video') return { url: bgVideoUrl, opacity: bgOpacity, video_sound: bgVideoSound };
     return {};
   };
 
@@ -285,6 +287,7 @@ export function AppearancePage() {
           bgGradient={bgGradient}
           bgImageUrl={bgImageUrl}
           bgVideoUrl={bgVideoUrl}
+          bgVideoSound={bgVideoSound}
           bgOpacity={bgOpacity}
           bgBlur={bgBlur}
           canVideo={can('video_background')}
@@ -294,6 +297,7 @@ export function AppearancePage() {
             setBgGradient(cfg.gradient);
             setBgImageUrl(cfg.imageUrl);
             setBgVideoUrl(cfg.videoUrl);
+            setBgVideoSound(cfg.videoSound);
             setBgOpacity(cfg.opacity);
             setBgBlur(cfg.blur);
             setShowBackgroundEditor(false);
@@ -428,11 +432,11 @@ function FontPickerModal({ currentFont, onSave, onClose }: { currentFont: string
 }
 
 type BgConfig = {
-  type: string; color: string; gradient: string; imageUrl: string; videoUrl: string; opacity: number; blur: number;
+  type: string; color: string; gradient: string; imageUrl: string; videoUrl: string; videoSound: boolean; opacity: number; blur: number;
 };
 
-function BackgroundEditorModal({ bgType, bgColor, bgGradient, bgImageUrl, bgVideoUrl, bgOpacity, bgBlur, canVideo, onSave, onClose }: {
-  bgType: string; bgColor: string; bgGradient: string; bgImageUrl: string; bgVideoUrl: string; bgOpacity: number; bgBlur: number;
+function BackgroundEditorModal({ bgType, bgColor, bgGradient, bgImageUrl, bgVideoUrl, bgVideoSound, bgOpacity, bgBlur, canVideo, onSave, onClose }: {
+  bgType: string; bgColor: string; bgGradient: string; bgImageUrl: string; bgVideoUrl: string; bgVideoSound: boolean; bgOpacity: number; bgBlur: number;
   canVideo: boolean; onSave: (cfg: BgConfig) => void; onClose: () => void;
 }) {
   const [type, setType] = useState(bgType);
@@ -440,6 +444,7 @@ function BackgroundEditorModal({ bgType, bgColor, bgGradient, bgImageUrl, bgVide
   const [gradient, setGradient] = useState(bgGradient);
   const [imageUrl, setImageUrl] = useState(bgImageUrl);
   const [videoUrl, setVideoUrl] = useState(bgVideoUrl);
+  const [videoSound, setVideoSound] = useState(bgVideoSound);
   const [opacity, setOpacity] = useState(bgOpacity);
   const [blur, setBlur] = useState(bgBlur);
 
@@ -498,6 +503,18 @@ function BackgroundEditorModal({ bgType, bgColor, bgGradient, bgImageUrl, bgVide
                   <label className="label">Video URL</label>
                   <input className="input" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://...mp4" />
                 </div>
+                <div className="flex items-center justify-between rounded-xl border border-white/[0.06] p-3">
+                  <div>
+                    <p className="text-sm font-medium text-white">Video Ses</p>
+                    <p className="text-xs text-ink-300">Açıkken arka plan videosunun sesi çalar</p>
+                  </div>
+                  <button
+                    onClick={() => setVideoSound((v) => !v)}
+                    className={`relative h-7 w-14 rounded-full transition ${videoSound ? 'bg-accent' : 'bg-white/[0.08]'}`}
+                  >
+                    <span className={`absolute top-1 h-5 w-5 rounded-full transition-transform ${videoSound ? 'translate-x-8 bg-ink-950' : 'translate-x-1 bg-white/60'}`} />
+                  </button>
+                </div>
                 <div>
                   <label className="label">Opaklık: {opacity.toFixed(2)}</label>
                   <input type="range" min={0} max={1} step={0.05} value={opacity} onChange={(e) => setOpacity(parseFloat(e.target.value))} className="w-full accent-accent" />
@@ -506,7 +523,7 @@ function BackgroundEditorModal({ bgType, bgColor, bgGradient, bgImageUrl, bgVide
             )}
             <div className="flex justify-end gap-2">
               <button onClick={onClose} className="btn-ghost">Vazgeç</button>
-              <button onClick={() => onSave({ type, color, gradient, imageUrl, videoUrl, opacity, blur })} className="btn-primary">Kaydet</button>
+              <button onClick={() => onSave({ type, color, gradient, imageUrl, videoUrl, videoSound, opacity, blur })} className="btn-primary">Kaydet</button>
             </div>
           </div>
         </div>

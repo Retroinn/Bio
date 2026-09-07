@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Link } from '@/components/Router';
 import { Logo } from '@/components/ui';
 import { ArrowLeft } from 'lucide-react';
@@ -14,6 +14,13 @@ export function AuthLayout({
   subtitle: string;
   backTo?: string;
 }) {
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="robots"]');
+    if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', 'robots'); document.head.appendChild(meta); }
+    meta.setAttribute('content', 'noindex, nofollow');
+    return () => { meta?.setAttribute('content', 'index, follow'); };
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="absolute left-1/2 top-0 -z-10 h-80 w-[40rem] -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />

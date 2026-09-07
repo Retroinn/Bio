@@ -33,7 +33,9 @@ async function ensureProfile(user: User): Promise<Profile | null> {
   if (existing) return existing as Profile;
 
   const meta = user.user_metadata ?? {};
-  let username = (meta.username as string) || (meta.preferred_username as string) || (meta.name as string) || (user.email?.split('@')[0]) || 'user';
+  const pendingUsername = typeof localStorage !== 'undefined' ? localStorage.getItem('bio_pending_username') : null;
+  if (pendingUsername) localStorage.removeItem('bio_pending_username');
+  let username = pendingUsername || (meta.username as string) || (meta.preferred_username as string) || (meta.name as string) || (user.email?.split('@')[0]) || 'user';
   username = username.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
   if (!username || username.length < 3) username = 'user';
 

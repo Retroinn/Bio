@@ -3,13 +3,14 @@ import { Disc3, Link2, Unlink } from 'lucide-react';
 import { DashboardLayout } from './DashboardLayout';
 import { ConfirmDialog } from '@/components/Modal';
 import { Spinner } from '@/components/ui';
+import { SocialIcon } from '@/components/SocialIcon';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast';
 import { supabase } from '@/lib/supabase';
 import type { DiscordConnection } from '@/lib/types';
 
 export function DiscordPage() {
-  const { profile, user } = useAuth();
+  const { profile, user, session, refreshProfile } = useAuth();
   const toast = useToast();
   const [connection, setConnection] = useState<DiscordConnection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,18 +26,49 @@ export function DiscordPage() {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [profile?.id]);
 
+  useEffect(() => {
+    if (!user || !profile) return;
+    const discordIdentity = user.identities?.find((id) => id.provider === 'discord');
+    if (!discordIdentity) return;
+    (async () => {
+      const { data: existing } = await supabase.from('discord_connections').select('id').eq('profile_id', profile.id).maybeSingle();
+      if (existing) return;
+
+      const meta = discordIdentity.identity_data ?? {};
+      const discordUsername = (meta.full_name as string) || (meta.name as string) || (meta.preferred_username as string) || 'discord_user';
+      const discordUserId = discordIdentity.id;
+      const avatarUrl = (meta.avatar_url as string) || null;
+
+      const { error } = await supabase.from('discord_connections').insert({
+        profile_id: profile.id,
+        discord_user_id: discordUserId,
+        discord_username: discordUsername,
+        display_name: discordUsername,
+        avatar_url: avatarUrl,
+      });
+
+      if (!error) {
+        toast('Discord bağlandı.', 'success');
+        await load();
+      }
+    })();
+  }, [user, profile, toast]);
+
   if (!profile) return <DashboardLayout><div className="card p-8 text-center text-sm text-ink-200">Yükleniyor...</div></DashboardLayout>;
 
   const connectDiscord = async () => {
-    if (!user) return;
-    const { error } = await supabase.auth.signInWithOAuth({
+    if (!user || !session) {
+      toast('Discord bağlamak için giriş yapmalısın.', 'error');
+      return;
+    }
+    const { error } = await supabase.auth.linkIdentity({
       provider: 'discord',
       options: {
         redirectTo: `${window.location.origin}/dashboard/discord`,
         scopes: 'identify',
       },
     });
-    if (error) toast('Discord bağlantısı başlatılamadı.', 'error');
+    if (error) toast(error.message || 'Discord bağlantısı başlatılamadı.', 'error');
   };
 
   const disconnect = async () => {
@@ -60,7 +92,7 @@ export function DiscordPage() {
         <div className="card p-6">
           <div className="flex items-center gap-4">
             <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-[#5865F2]/20">
-              {connection.avatar_url ? <img src={connection.avatar_url} alt="" className="h-full w-full object-cover" /> : <Disc3 className="h-8 w-8 text-[#5865F2]" />}
+              {connection.avatar_url ? <img src={connection.avatar_url} alt="" className="h-full w-full object-cover" /> : <SocialIcon platform="discord" size={28} className="text-[#5865F2]" />}
             </div>
             <div className="flex-1">
               <h3 className="font-display text-lg font-semibold text-white">{connection.display_name || connection.discord_username}</h3>
@@ -85,7 +117,7 @@ export function DiscordPage() {
       ) : (
         <div className="card p-8 text-center">
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#5865F2]/15">
-            <Disc3 className="h-7 w-7 text-[#5865F2]" />
+            <SocialIcon platform="discord" size={28} className="text-[#5865F2]" />
           </div>
           <h3 className="font-display text-lg font-semibold text-white">Discord hesabını bağla</h3>
           <p className="mx-auto mt-2 max-w-sm text-sm text-ink-200">

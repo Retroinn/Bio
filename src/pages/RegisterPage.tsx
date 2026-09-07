@@ -99,7 +99,7 @@ export function RegisterPage() {
     });
     if (error) {
       setOauthLoading(null);
-      toast('OAuth başlatılamadı.', 'error');
+      toast(error.message || 'OAuth başlatılamadı.', 'error');
     }
   };
 

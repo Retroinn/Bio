@@ -32,7 +32,7 @@ function ResultState({ error }: { error: string | null }) {
 
 function DataTable({ rows, columns }: { rows: JsonRow[]; columns: Array<{ key: string; label: string }> }) {
   if (rows.length === 0) return <div className="card p-8 text-center text-sm text-ink-200">Kayıt bulunamadı.</div>;
-  return <div className="card overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead><tr className="border-b border-white/[0.06]">{columns.map((column) => <th key={column.key} className="whitespace-nowrap px-4 py-3 text-xs font-medium uppercase tracking-wider text-ink-300">{column.label}</th>)}</tr></thead><tbody>{rows.map((row, index) => <tr key={String(row.id ?? index)} className="border-b border-white/[0.04] last:border-0"><>{columns.map((column) => <td key={column.key} className="max-w-[260px] truncate px-4 py-3 text-ink-100">{formatValue(row[column.key])}</td>)}</></tr>)}</tbody></table></div>;
+  return <div className="card overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead><tr className="border-b border-white/[0.06]">{columns.map((column) => <th key={column.key} className="whitespace-nowrap px-4 py-3 text-xs font-medium uppercase tracking-wider text-ink-300">{column.label}</th>)}</tr></thead><tbody>{rows.map((row, index) => <tr key={String(row.id ?? index)} className="border-b border-white/[0.04] last:border-0"><>{columns.map((column) => <td key={column.key} className="max-w-[260px] truncate px-4 py-3 text-ink-100">{renderCell(column, row[column.key])}</td>)}</></tr>)}</tbody></table></div>;
 }
 
 function formatValue(value: unknown): string {
@@ -40,6 +40,16 @@ function formatValue(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'Evet' : 'Hayır';
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
+}
+
+function renderCell(column: { key: string }, value: unknown): React.ReactNode {
+  if (column.key === 'avatar_url' && typeof value === 'string' && value !== '') {
+    return <img src={value} alt="" className="h-8 w-8 rounded-full object-cover" />;
+  }
+  if (column.key === 'created_at' && typeof value === 'string') {
+    return new Date(value).toLocaleDateString('tr-TR');
+  }
+  return formatValue(value);
 }
 
 export function AdminOverviewPage() {
@@ -51,7 +61,7 @@ export function AdminOverviewPage() {
 
 export function AdminUsersPage() {
   const result = useAdminRpc<JsonRow[]>('admin_get_users');
-  return <PageShell title="Kullanıcılar" description="Platform kullanıcılarını ve profil durumlarını görüntüle.">{result.data ? <DataTable rows={result.data} columns={[{ key: 'email', label: 'E-posta' }, { key: 'username', label: 'Kullanıcı adı' }, { key: 'plan_slug', label: 'Plan' }, { key: 'sub_status', label: 'Abonelik' }, { key: 'is_banned', label: 'Yasaklı' }, { key: 'created_at', label: 'Kayıt' }]} /> : <ResultState error={result.error} />}</PageShell>;
+  return <PageShell title="Kullanıcılar" description="Platform kullanıcılarını ve profil durumlarını görüntüle.">{result.data ? <DataTable rows={result.data} columns={[{ key: 'avatar_url', label: 'Avatar' }, { key: 'email', label: 'E-posta' }, { key: 'username', label: 'Kullanıcı adı' }, { key: 'display_name', label: 'Ad' }, { key: 'plan_slug', label: 'Plan' }, { key: 'sub_status', label: 'Abonelik' }, { key: 'is_banned', label: 'Yasaklı' }, { key: 'created_at', label: 'Kayıt' }]} /> : <ResultState error={result.error} />}</PageShell>;
 }
 
 export function AdminSubscriptionsPage() {
