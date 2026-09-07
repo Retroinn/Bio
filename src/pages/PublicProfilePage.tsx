@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ExternalLink, Flag, Globe, Link2, MapPin, Music, Pause, Play, Volume2, BadgeCheck, Github, Video, ImageOff } from 'lucide-react';
-import { Link, useRouter } from '@/components/Router';
-import { Logo } from '@/components/ui';
+import { ExternalLink, Flag, Globe, Link2, MapPin, Music, Pause, Play, Volume2, BadgeCheck, Github, ImageOff } from 'lucide-react';
+import { Link } from '@/components/Router';
+import { SocialIcon } from '@/components/SocialIcon';
 import { Modal } from '@/components/Modal';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast';
@@ -10,12 +10,6 @@ import { getProfileContent, getPublicProfile, recordLinkClick, recordProfileView
 import { detectDevice, initials, isSafeUrl, normalizeUrl } from '@/lib/utils';
 import { resolveTheme, resolveBackground, applyThemeCSS, cardStyle, buttonStyle, type ResolvedTheme } from '@/lib/theme-engine';
 import type { Link as LinkType, MediaItem, MusicTrack, Profile, Project, SocialLink, Theme, Widget } from '@/lib/types';
-
-const SOCIAL_ICONS: Record<string, string> = {
-  instagram: 'IG', tiktok: 'TT', youtube: 'YT', x: 'X', github: 'GH', twitch: 'TW',
-  spotify: 'SP', steam: 'ST', reddit: 'RD', telegram: 'TG', discord: 'DC',
-  linkedin: 'LI', facebook: 'FB', snapchat: 'SC', roblox: 'RB', custom: 'URL',
-};
 
 export function PublicProfilePage({ username }: { username: string }) {
   const { user } = useAuth();
@@ -114,11 +108,6 @@ export function PublicProfilePage({ username }: { username: string }) {
     >
       {bg.videoEl}
 
-      <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-4" style={{ background: `${resolvedTheme.background}80`, backdropFilter: 'blur(12px)' }}>
-        {profile.remove_branding ? <span /> : <Link to="/"><Logo size="sm" /></Link>}
-        <button onClick={() => setShowReport(true)} className="btn-ghost text-xs" style={{ color: resolvedTheme.text }}><Flag className="h-3.5 w-3.5" /> Raporla</button>
-      </header>
-
       {profile.banner_url && <ProfileBanner url={profile.banner_url} theme={resolvedTheme} />}
 
       <ProfileLayout
@@ -134,6 +123,10 @@ export function PublicProfilePage({ username }: { username: string }) {
         onProjectClick={(project) => { if (project.project_url) { recordLinkClick(profile.id, project.id, 'project_click'); window.open(normalizeUrl(project.project_url), '_blank', 'noopener,noreferrer'); } }}
       />
       <MediaSection media={visibleMedia} theme={resolvedTheme} />
+
+      <div className="relative z-10 mt-8 flex justify-center px-5 pb-4">
+        <button onClick={() => setShowReport(true)} className="btn-ghost text-xs" style={{ color: resolvedTheme.text, opacity: 0.5 }}><Flag className="h-3.5 w-3.5" /> Raporla</button>
+      </div>
 
       {bg.overlayStyle && <div className="fixed inset-0 z-0 pointer-events-none" style={bg.overlayStyle} />}
 
@@ -305,8 +298,8 @@ function SocialIcons({ socials, theme, onSocialClick }: { socials: SocialLink[];
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {socials.map((s) => (
-        <button key={s.id} onClick={() => onSocialClick(s)} className="grid h-10 w-10 place-items-center rounded-xl border text-xs font-semibold transition hover:scale-110" style={{ borderColor: `${theme.accent}30`, backgroundColor: `${theme.surface}80`, color: theme.text }} title={s.platform}>
-          {SOCIAL_ICONS[s.platform] ?? 'URL'}
+        <button key={s.id} onClick={() => onSocialClick(s)} className="grid h-10 w-10 place-items-center rounded-xl border transition hover:scale-110" style={{ borderColor: `${theme.accent}30`, backgroundColor: `${theme.surface}80`, color: theme.text }} title={s.platform}>
+          <SocialIcon platform={s.platform} size={18} />
         </button>
       ))}
     </div>
@@ -679,7 +672,7 @@ function WidgetRenderer({ widget, theme }: { widget: Widget; theme: ResolvedThem
     if (widget.type === 'discord_server' && (cfg.invite_url as string)) {
       return (
         <div className="flex items-center gap-3 p-4" style={s}>
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-[#5865F2]/20 text-[#5865F2]">DC</div>
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-[#5865F2]/20 text-[#5865F2]"><SocialIcon platform="discord" size={18} /></div>
           <div className="flex-1">
             <p className="text-sm font-medium">{cfg.server_name as string}</p>
             <p className="text-xs" style={{ opacity: 0.6 }}>Discord sunucusu</p>

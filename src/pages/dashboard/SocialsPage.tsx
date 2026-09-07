@@ -3,6 +3,7 @@ import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { DashboardLayout } from './DashboardLayout';
 import { ConfirmDialog, Modal } from '@/components/Modal';
 import { EmptyState, Spinner } from '@/components/ui';
+import { SocialIcon } from '@/components/SocialIcon';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast';
 import { supabase } from '@/lib/supabase';
@@ -104,7 +105,7 @@ export function SocialsPage() {
           {socials.map((s, index) => (
             <div key={s.id} draggable onDragStart={() => setDragIndex(index)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (dragIndex !== null) reorder(dragIndex, index); setDragIndex(null); }} className="card group flex items-center gap-3 p-3.5">
               <GripVertical className="h-5 w-5 cursor-grab text-ink-300" />
-              <span className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.04] text-sm font-semibold uppercase text-accent">{s.platform.slice(0, 2)}</span>
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-white/[0.04] text-accent"><SocialIcon platform={s.platform} size={18} /></span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-white">{PLATFORMS[s.platform]?.label ?? s.platform}</p>
                 <p className="truncate text-xs text-ink-300">{s.username || s.url}</p>
